@@ -121,6 +121,9 @@ PRIVATE void manual_list_aux_();
 #define USERDEF(NAME)						\
     if (stk->op != USR_)					\
 	execerror("user defined symbol",NAME)
+#define USERDEF2(NAME)						\
+    if (stk->next->op != USR_)					\
+	execerror("user defined symbol",NAME)
 #define CHECKLIST(OPR,NAME)					\
     if (OPR != LIST_)						\
 	execerror("internal list",NAME)
@@ -2321,6 +2324,14 @@ PRIVATE void manual_list_aux_()
 {
     manual_list_();
 }
+PRIVATE void def_()
+{   TWOPARAMS("def");
+    LIST("def");
+    USERDEF2("def");
+    stk->next->u.ent->u.body = stk->u.lis;
+    POP(stk);
+    POP(stk);
+    }
 
 /* - - - - -   I N I T I A L I S A T I O N   - - - - - */
 
@@ -3019,6 +3030,9 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 
 {"quit",		quit_,			"->",
 "Exit from Joy."},
+
+{"def",              def_,                "X [P] ->",
+"Defines a new user symbol with name X."},
 
 {0, dummy_, "->","->"}
 };
