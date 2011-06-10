@@ -118,15 +118,22 @@ void copy_runtimedefs(void)
     oldruntimedefs = runtimedefs;
     COP(runtimedefs, "runtimedefs");
     p = firstlibra;
-    while (p < symtabindex) 
+    for (p = firstlibra; p < symtabindex; ++p) 
     {
-        for (n = oldruntimedefs, n2=runtimedefs;
-                n!=0; n=n->next, n2=n2->next)
-            if (n->u.lis == p->u.body) {
-                p->u.body = n2->u.lis;
-                break;
-            }
-        ++p;
+        if (p->u.body != 0) {
+            if (tracegc > 5)
+              { printf("trying to rescue def (%s) :",p->name);
+                printnode(p->u.body);} 
+            for (n = oldruntimedefs, n2=runtimedefs;
+                    n!=0; n=n->next, n2=n2->next)
+                if (n->u.lis == p->u.body) {
+                    p->u.body = n2->u.lis;
+                    if (tracegc > 3)
+                      { printf("rescued def (%s) :",p->name);
+                        printnode(p->u.body);} 
+                    break;
+                }
+        }
     }
 }
 
