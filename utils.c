@@ -20,7 +20,7 @@ static int start_gc_clock;
 
 PUBLIC void inimem1(void)
 {
-    stk = conts = dump = dump1 = dump2 = dump3 = dump4 = dump5 = NULL;
+    stk = conts = dump = dump1 = dump2 = dump3 = dump4 = dump5 = runtimedefs = NULL;
 # ifndef GC_BDW
     direction = +1;
     memoryindex = mem_low;
@@ -98,6 +98,38 @@ PRIVATE Node *copy(n)
 # endif
 
 # ifndef GC_BDW
+
+#define COP(X,NAME)						\
+    if (X != NULL)						\
+      { if (tracegc > 2)					\
+	  { printf("old %s = ",NAME);				\
+	    writeterm(X, stdout); printf("\n"); }			\
+	X = copy(X);						\
+	if (tracegc > 2)					\
+	  { printf("new %s = ",NAME);				\
+	    writeterm(X, stdout); printf("\n"); } }
+
+void copy_runtimedefs(void)
+{
+    /* runtime defs */
+    Node *oldruntimedefs;
+    Node *n, *n2;
+    Entry *p;
+    oldruntimedefs = runtimedefs;
+    COP(runtimedefs, "runtimedefs");
+    p = firstlibra;
+    while (p < symtabindex) 
+    {
+        for (n = oldruntimedefs, n2=runtimedefs;
+                n!=0; n=n->next, n2=n2->next)
+            if (n->u.lis == p->u.body) {
+                p->u.body = n2->u.lis;
+                break;
+            }
+        ++p;
+    }
+}
+
 PRIVATE void gc1(mess)
     char * mess;
 {
@@ -114,20 +146,13 @@ PRIVATE void gc1(mess)
 */
     nodesinspected = nodescopied = 0;
 
-#define COP(X,NAME)						\
-    if (X != NULL)						\
-      { if (tracegc > 2)					\
-	  { printf("old %s = ",NAME);				\
-	    writeterm(X, stdout); printf("\n"); }			\
-	X = copy(X);						\
-	if (tracegc > 2)					\
-	  { printf("new %s = ",NAME);				\
-	    writeterm(X, stdout); printf("\n"); } }
 
     COP(stk,"stk"); COP(prog,"prog"); COP(conts,"conts");
     COP(dump,"dump"); COP(dump1,"dump1"); COP(dump2,"dump2");
     COP(dump3,"dump3"); COP(dump4,"dump4"); COP(dump5,"dump5");
+    copy_runtimedefs();
 }
+
 PRIVATE void gc2(mess)
     char * mess;
 {

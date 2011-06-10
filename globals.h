@@ -9,7 +9,7 @@
 #define SYMTABMAX	1000
 #define DISPLAYMAX	10	/* nesting in HIDE & MODULE	*/
 # ifndef GC_BDW
-#    define MEMORYMAX	20000
+#    define MEMORYMAX	40000
 # else
 #    define MEMORYMAX	0
 # endif
@@ -127,7 +127,7 @@ CLASS Node			/* dynamic memory	*/
     *memoryindex,
 */
     *prog, *stk, *conts,
-    *dump, *dump1, *dump2, *dump3, *dump4, *dump5;
+    *dump, *dump1, *dump2, *dump3, *dump4, *dump5, *runtimedefs;
 
 #define MEM2INT(n) (((long)n - (long)memory) / sizeof(Node))
 #define INT2MEM(x) ((Node*) ((x + (long)&memory) * sizeof(Node)))

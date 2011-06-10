@@ -2328,7 +2328,32 @@ PRIVATE void def_()
 {   TWOPARAMS("def");
     LIST("def");
     USERDEF2("def");
-    stk->next->u.ent->u.body = stk->u.lis;
+    Node * body = stk->u.lis;
+    Entry * location = stk->next->u.ent;
+    Node * oldbody = location -> u.body;
+    if (oldbody != 0 && runtimedefs != 0) {
+        /* remove oldbody from runtimedefs */
+        if (runtimedefs->u.lis == oldbody) {
+            if (tracegc > 4)
+              { printf("def_: removed %ld (%s)",(long)runtimedefs->u.lis, location->name);
+                printnode(runtimedefs->u.lis); }
+            runtimedefs = runtimedefs->next;
+        } else {
+            Node* p = runtimedefs;
+            while (p->next != 0 && p->next->u.lis != oldbody) p=p->next;
+            if (p->next != 0) {
+                if (tracegc > 4)
+                  { printf("def_: removed %ld(%s) ",(long)p->next->u.lis, location->name);
+                    printnode(p->next->u.lis); }
+                p->next = p->next->next;
+            }
+        }
+    }
+    location->u.body = body;
+    bucket.lis = body; runtimedefs = newnode(LIST_, bucket, runtimedefs);
+    if (tracegc > 4)
+      { printf("def_: added %ld (%s)",(long)runtimedefs->u.lis, location->name);
+        printnode(runtimedefs->u.lis);}
     POP(stk);
     POP(stk);
     }
