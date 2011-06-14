@@ -112,27 +112,15 @@ PRIVATE Node *copy(n)
 void copy_runtimedefs(void)
 {
     /* runtime defs */
-    Node *oldruntimedefs;
-    Node *n, *n2;
     Entry *p;
-    oldruntimedefs = runtimedefs;
     COP(runtimedefs, "runtimedefs");
-    p = firstlibra;
     for (p = firstlibra; p < symtabindex; ++p) 
     {
-        if (p->u.body != 0) {
-            if (tracegc > 5)
-              { printf("trying to rescue def (%s) :",p->name);
+        if (p->u.body != 0 && p->u.body->op == COPIED_) {
+            p->u.body = p->u.body->u.lis;
+            if (tracegc > 3)
+              { printf("rescued def (%s) :",p->name);
                 printnode(p->u.body);} 
-            for (n = oldruntimedefs, n2=runtimedefs;
-                    n!=0; n=n->next, n2=n2->next)
-                if (n->u.lis == p->u.body) {
-                    p->u.body = n2->u.lis;
-                    if (tracegc > 3)
-                      { printf("rescued def (%s) :",p->name);
-                        printnode(p->u.body);} 
-                    break;
-                }
         }
     }
 }
